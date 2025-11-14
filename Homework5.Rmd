@@ -28,6 +28,7 @@ This homework will test your knowledge of version control with Git/GitHub, conta
 **Total Points: 100**
 
 **Important:** You will need to submit:
+
 - A PDF/HTML version of this completed Rmd file with your answers
 - A link to your GitHub repository
 - A link to your Docker Hub image
@@ -45,6 +46,7 @@ This homework will test your knowledge of version control with Git/GitHub, conta
 **Answer:**
 
 In Git, a commit records a snapshot of the project's content and history at a point in time. Each commit stores:
+
 - The tree of files/directories
 - One or more parent commit hashes
 - Author and committer identities and timestamps
@@ -57,6 +59,7 @@ In Git, a commit records a snapshot of the project's content and history at a po
 **Answer:**
 
 Descriptive messages help collaborators, and your future self, understand what changed and why, speeding up code reviews, debugging, and audits.
+
 - Good: "Add Dockerfile and benchmark script"
 - Bad: "fix stuff"
 
@@ -88,13 +91,15 @@ Branches are just small files with a commit hash, rather than full copies of the
 **Answer:**
 
 Merging integrates changes from one branch into another.
+
 - Ensure a clean working tree on `main` by pulling the latest changes:
 ```bash
 git checkout main
 git pull
 git merge feature-analysis
 ```
-- If mergeconflicts arise, resolve them, then:
+
+- If merge conflicts arise, resolve them, then:
 ```bash
 git add .
 git commit -m "Resolve merge conflicts"
@@ -176,6 +181,7 @@ It requires `torch` (PyTorch). It also uses the Python standard library `time`.
 ## Question 2.2: Create a Dockerfile (10 points)
 
 Create a Dockerfile that:
+
 - Uses an appropriate **Linux-based** base image with Python 3.9 or later
 - Installs the required Python packages (PyTorch with CUDA support for GPU computing)
 - Copies `compute_bench.py` into the container
@@ -186,6 +192,7 @@ Create a Dockerfile that:
 - **Operating System**: Even if you're on macOS or Windows, Docker will build a Linux container. Use Linux base images (e.g., `python:3.9-slim` is based on Debian Linux).
 
 - **CUDA Support**: Longleaf has NVIDIA GPUs. To enable GPU support in your container:
+
   - Option 1: Use official PyTorch image with CUDA: `pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime`
   - Option 2: Install PyTorch with CUDA support: `pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118`
   - Note: The container itself doesn't need NVIDIA drivers (Longleaf provides those), but PyTorch needs to be CUDA-aware.
@@ -210,6 +217,7 @@ CMD ["python", "/app/compute_bench.py"]
 ```
 
 **Grading Criteria:**
+
 - Appropriate Linux base image selection (2 points)
 - CUDA-enabled PyTorch installation (4 points)
 - Proper file copying (2 points)
@@ -229,6 +237,7 @@ docker build --platform linux/amd64 -t rmharp23/stor674-homework5:latest .
 **Explanation:**
 
 - `docker build`: build a container image from a Dockerfile
+- `--platform linux/amd64`: force the image to target Linux/amd64 so it runs on Longleaf and avoids platform mismatch warnings on macOS
 - `-t rmharp23/stor674-homework5:latest`: tag the image with repo/name and tag for pushing
 - `.`: use the current directory as the build context, where the Dockerfile and script live
 
@@ -399,6 +408,7 @@ apptainer shell --nv stor674-hw5.sif
 Create a Slurm job script that runs your containerized `compute_bench.py` using Apptainer.
 
 **Hint:** If you want to test with GPU support on Longleaf, you'll need to:
+
 - Request a GPU partition (e.g., `#SBATCH -p gpu`)
 - Request GPU resources (e.g., `#SBATCH --gres=gpu:1`)
 - Your CUDA-enabled PyTorch in the container will automatically use the GPU!
@@ -439,6 +449,7 @@ echo "Finished at: $(date)"
 ```
 
 **Grading Criteria:**
+
 - Appropriate Slurm directives (#SBATCH) (4 points)
 - Correct Apptainer run command (6 points)
 - Output redirection and job organization (2 points)
@@ -501,22 +512,23 @@ Containerizing the environment, and versioning both code and Dockerfiles, captur
 
 Before submitting, make sure you have:
 
-- [ ] Completed all questions in Part 1 (Git/GitHub concepts)
-- [ ] **Created a GitHub repository with all your project files**
-- [ ] **Practiced branching and merging in your Git workflow**
-- [ ] Created a Dockerfile with CUDA support for GPU computing
-- [ ] Built and tested your Docker image locally (Linux container on macOS/Windows)
-- [ ] Pushed your image to Docker Hub
-- [ ] Provided your Docker Hub image URL
-- [ ] Created a Slurm job script
-- [ ] Successfully ran your job on Longleaf
-- [ ] **Pushed all files (Dockerfile, Slurm script, completed Rmd) to GitHub**
-- [ ] Included all output and screenshots
-- [ ] Compiled this Rmd file to HTML or PDF
+- [x] Completed all questions in Part 1 (Git/GitHub concepts)
+- [x] **Created a GitHub repository with all your project files**
+- [x] **Practiced branching and merging in your Git workflow**
+- [x] Created a Dockerfile with CUDA support for GPU computing
+- [x] Built and tested your Docker image locally (Linux container on macOS/Windows)
+- [x] Pushed your image to Docker Hub
+- [x] Provided your Docker Hub image URL
+- [x] Created a Slurm job script
+- [x] Successfully ran your job on Longleaf
+- [x] **Pushed all files (Dockerfile, Slurm script, completed Rmd) to GitHub**
+- [x] Included all output and screenshots
+- [x] Compiled this Rmd file to HTML or PDF
 
 **Submission Instructions:**
 
 1. **Ensure your GitHub repository contains:**
+
    - `Dockerfile`
    - `compute_bench.py`
    - `run_compute_bench.sh` (Slurm script)

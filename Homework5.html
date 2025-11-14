@@ -1582,10 +1582,14 @@ Slurm</li>
 you’ll be building Linux containers that will run on Longleaf’s Linux
 HPC environment.</p>
 <p><strong>Total Points: 100</strong></p>
-<p><strong>Important:</strong> You will need to submit: - A PDF/HTML
-version of this completed Rmd file with your answers - A link to your
-GitHub repository - A link to your Docker Hub image - Your Slurm job
-script - Screenshot/output of your Slurm job completion</p>
+<p><strong>Important:</strong> You will need to submit:</p>
+<ul>
+<li>A PDF/HTML version of this completed Rmd file with your answers</li>
+<li>A link to your GitHub repository</li>
+<li>A link to your Docker Hub image</li>
+<li>Your Slurm job script</li>
+<li>Screenshot/output of your Slurm job completion</li>
+</ul>
 <hr />
 </div>
 <div id="part-1-git-and-github-concepts-20-points" class="section level1">
@@ -1596,18 +1600,25 @@ script - Screenshot/output of your Slurm job completion</p>
 what information is stored in a commit.</p>
 <p><strong>Answer:</strong></p>
 <p>In Git, a commit records a snapshot of the project’s content and
-history at a point in time. Each commit stores: - The tree of
-files/directories - One or more parent commit hashes - Author and
-committer identities and timestamps - The commit message describing the
-change - A unique SHA-1/SHA-256 hash identifying the commit</p>
+history at a point in time. Each commit stores:</p>
+<ul>
+<li>The tree of files/directories</li>
+<li>One or more parent commit hashes</li>
+<li>Author and committer identities and timestamps</li>
+<li>The commit message describing the change</li>
+<li>A unique SHA-1/SHA-256 hash identifying the commit</li>
+</ul>
 <p><strong>b)</strong> (2 points) Why is it important to write
 descriptive commit messages? Provide an example of a good commit message
 and a bad commit message.</p>
 <p><strong>Answer:</strong></p>
 <p>Descriptive messages help collaborators, and your future self,
 understand what changed and why, speeding up code reviews, debugging,
-and audits. - Good: “Add Dockerfile and benchmark script” - Bad: “fix
-stuff”</p>
+and audits.</p>
+<ul>
+<li>Good: “Add Dockerfile and benchmark script”</li>
+<li>Bad: “fix stuff”</li>
+</ul>
 </div>
 <div id="question-1.2-branching-in-git-10-points" class="section level2">
 <h2>Question 1.2: Branching in Git (10 points)</h2>
@@ -1637,14 +1648,16 @@ operation that reuses existing objects until new commits diverge.</p>
 branches? Describe the steps you would take to merge a branch called
 <code>feature-analysis</code> into the <code>main</code> branch.</p>
 <p><strong>Answer:</strong></p>
-<p>Merging integrates changes from one branch into another. - Ensure a
-clean working tree on <code>main</code> by pulling the latest
-changes:</p>
+<p>Merging integrates changes from one branch into another.</p>
+<ul>
+<li>Ensure a clean working tree on <code>main</code> by pulling the
+latest changes:</li>
+</ul>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">git</span> checkout main</span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">git</span> pull</span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">git</span> merge feature-analysis</span></code></pre></div>
 <ul>
-<li>If mergeconflicts arise, resolve them, then:</li>
+<li>If merge conflicts arise, resolve them, then:</li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">git</span> add .</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">&quot;Resolve merge conflicts&quot;</span></span>
@@ -1725,11 +1738,15 @@ standard library <code>time</code>.</p>
 </div>
 <div id="question-2.2-create-a-dockerfile-10-points" class="section level2">
 <h2>Question 2.2: Create a Dockerfile (10 points)</h2>
-<p>Create a Dockerfile that: - Uses an appropriate
-<strong>Linux-based</strong> base image with Python 3.9 or later -
-Installs the required Python packages (PyTorch with CUDA support for GPU
-computing) - Copies <code>compute_bench.py</code> into the container -
-Sets the default command to run the script</p>
+<p>Create a Dockerfile that:</p>
+<ul>
+<li>Uses an appropriate <strong>Linux-based</strong> base image with
+Python 3.9 or later</li>
+<li>Installs the required Python packages (PyTorch with CUDA support for
+GPU computing)</li>
+<li>Copies <code>compute_bench.py</code> into the container</li>
+<li>Sets the default command to run the script</li>
+</ul>
 <p><strong>Important Considerations:</strong></p>
 <ul>
 <li><p><strong>Operating System</strong>: Even if you’re on macOS or
@@ -1764,10 +1781,13 @@ the GPU.</p></li>
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="kw">COPY</span> compute_bench.py /app/compute_bench.py</span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co"># runs the benchmark</span></span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="kw">CMD</span> [<span class="st">&quot;python&quot;</span>, <span class="st">&quot;/app/compute_bench.py&quot;</span>]</span></code></pre></div>
-<p><strong>Grading Criteria:</strong> - Appropriate Linux base image
-selection (2 points) - CUDA-enabled PyTorch installation (4 points) -
-Proper file copying (2 points) - Correct CMD or ENTRYPOINT (2
-points)</p>
+<p><strong>Grading Criteria:</strong></p>
+<ul>
+<li>Appropriate Linux base image selection (2 points)</li>
+<li>CUDA-enabled PyTorch installation (4 points)</li>
+<li>Proper file copying (2 points)</li>
+<li>Correct CMD or ENTRYPOINT (2 points)</li>
+</ul>
 </div>
 <div id="question-2.3-build-and-test-docker-image-10-points" class="section level2">
 <h2>Question 2.3: Build and Test Docker Image (10 points)</h2>
@@ -1915,10 +1935,13 @@ interactively. What command did you use to run it?</p>
 <p>Create a Slurm job script that runs your containerized
 <code>compute_bench.py</code> using Apptainer.</p>
 <p><strong>Hint:</strong> If you want to test with GPU support on
-Longleaf, you’ll need to: - Request a GPU partition (e.g.,
-<code>#SBATCH -p gpu</code>) - Request GPU resources (e.g.,
-<code>#SBATCH --gres=gpu:1</code>) - Your CUDA-enabled PyTorch in the
-container will automatically use the GPU!</p>
+Longleaf, you’ll need to:</p>
+<ul>
+<li>Request a GPU partition (e.g., <code>#SBATCH -p gpu</code>)</li>
+<li>Request GPU resources (e.g., <code>#SBATCH --gres=gpu:1</code>)</li>
+<li>Your CUDA-enabled PyTorch in the container will automatically use
+the GPU!</li>
+</ul>
 <p><strong>Instructions:</strong></p>
 <ol style="list-style-type: decimal">
 <li>Create a file named <code>run_compute_bench.sh</code> in your GitHub
@@ -1952,9 +1975,12 @@ etc.)</li>
 <span id="cb19-21"><a href="#cb19-21" tabindex="-1"></a>  python compute_bench.py</span>
 <span id="cb19-22"><a href="#cb19-22" tabindex="-1"></a></span>
 <span id="cb19-23"><a href="#cb19-23" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;Finished at: </span><span class="va">$(</span><span class="fu">date</span><span class="va">)</span><span class="st">&quot;</span></span></code></pre></div>
-<p><strong>Grading Criteria:</strong> - Appropriate Slurm directives
-(#SBATCH) (4 points) - Correct Apptainer run command (6 points) - Output
-redirection and job organization (2 points)</p>
+<p><strong>Grading Criteria:</strong></p>
+<ul>
+<li>Appropriate Slurm directives (#SBATCH) (4 points)</li>
+<li>Correct Apptainer run command (6 points)</li>
+<li>Output redirection and job organization (2 points)</li>
+</ul>
 </div>
 <div id="question-3.4-submit-verify-and-version-control-3-points" class="section level2">
 <h2>Question 3.4: Submit, Verify, and Version Control (3 points)</h2>
@@ -2015,35 +2041,35 @@ can mitigate these issues.</p>
 <h1>Submission Checklist</h1>
 <p>Before submitting, make sure you have:</p>
 <ul class="task-list">
-<li><label><input type="checkbox"></input>Completed all questions in Part 1
-(Git/GitHub concepts)</label></li>
-<li><label><input type="checkbox"></input><strong>Created a GitHub repository
-with all your project files</strong></label></li>
-<li><label><input type="checkbox"></input><strong>Practiced branching and
-merging in your Git workflow</strong></label></li>
-<li><label><input type="checkbox"></input>Created a Dockerfile with CUDA
-support for GPU computing</label></li>
-<li><label><input type="checkbox"></input>Built and tested your Docker image
-locally (Linux container on macOS/Windows)</label></li>
-<li><label><input type="checkbox"></input>Pushed your image to Docker
-Hub</label></li>
-<li><label><input type="checkbox"></input>Provided your Docker Hub image
-URL</label></li>
-<li><label><input type="checkbox"></input>Created a Slurm job
+<li><label><input type="checkbox" checked></input>Completed all questions
+in Part 1 (Git/GitHub concepts)</label></li>
+<li><label><input type="checkbox" checked></input><strong>Created a GitHub
+repository with all your project files</strong></label></li>
+<li><label><input type="checkbox" checked></input><strong>Practiced
+branching and merging in your Git workflow</strong></label></li>
+<li><label><input type="checkbox" checked></input>Created a Dockerfile with
+CUDA support for GPU computing</label></li>
+<li><label><input type="checkbox" checked></input>Built and tested your
+Docker image locally (Linux container on macOS/Windows)</label></li>
+<li><label><input type="checkbox" checked></input>Pushed your image to
+Docker Hub</label></li>
+<li><label><input type="checkbox" checked></input>Provided your Docker Hub
+image URL</label></li>
+<li><label><input type="checkbox" checked></input>Created a Slurm job
 script</label></li>
-<li><label><input type="checkbox"></input>Successfully ran your job on
-Longleaf</label></li>
-<li><label><input type="checkbox"></input><strong>Pushed all files
+<li><label><input type="checkbox" checked></input>Successfully ran your job
+on Longleaf</label></li>
+<li><label><input type="checkbox" checked></input><strong>Pushed all files
 (Dockerfile, Slurm script, completed Rmd) to
 GitHub</strong></label></li>
-<li><label><input type="checkbox"></input>Included all output and
+<li><label><input type="checkbox" checked></input>Included all output and
 screenshots</label></li>
-<li><label><input type="checkbox"></input>Compiled this Rmd file to HTML or
-PDF</label></li>
+<li><label><input type="checkbox" checked></input>Compiled this Rmd file to
+HTML or PDF</label></li>
 </ul>
 <p><strong>Submission Instructions:</strong></p>
 <ol style="list-style-type: decimal">
-<li><strong>Ensure your GitHub repository contains:</strong>
+<li><p><strong>Ensure your GitHub repository contains:</strong></p>
 <ul>
 <li><code>Dockerfile</code></li>
 <li><code>compute_bench.py</code></li>
@@ -2051,10 +2077,10 @@ PDF</label></li>
 <li><code>Homework5.Rmd</code> (completed)</li>
 <li>Evidence of branching/merging in commit history</li>
 </ul></li>
-<li>Submit the knitted HTML/PDF file on Canvas</li>
-<li><strong>Submit the link to your GitHub repository on Canvas
-(REQUIRED)</strong></li>
-<li>Submit the link to your Docker Hub image on Canvas</li>
+<li><p>Submit the knitted HTML/PDF file on Canvas</p></li>
+<li><p><strong>Submit the link to your GitHub repository on Canvas
+(REQUIRED)</strong></p></li>
+<li><p>Submit the link to your Docker Hub image on Canvas</p></li>
 </ol>
 <hr />
 </div>
