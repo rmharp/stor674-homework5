@@ -1800,6 +1800,9 @@ Docker image? Include the full command and explain each part.</p>
 <ul>
 <li><code>docker build</code>: build a container image from a
 Dockerfile</li>
+<li><code>--platform linux/amd64</code>: force the image to target
+Linux/amd64 so it runs on Longleaf and avoids platform mismatch warnings
+on macOS</li>
 <li><code>-t rmharp23/stor674-homework5:latest</code>: tag the image
 with repo/name and tag for pushing</li>
 <li><code>.</code>: use the current directory as the build context,
