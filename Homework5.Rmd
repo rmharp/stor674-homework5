@@ -1,0 +1,552 @@
+---
+title: "Homework 5: Version Control, Containerization, and HPC"
+author: "STOR 674"
+date: "Due: 11/21/2025"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: united
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+# Overview
+
+This homework will test your knowledge of version control with Git/GitHub, containerization with Docker, and high-performance computing with Apptainer and Slurm. You will:
+
+1. Answer conceptual questions about Git and GitHub
+2. **Create a GitHub repository and version control your Docker image build process (with branching and merging)**
+3. Build a Docker image for the Linux environment and push it to Docker Hub
+4. Download and run the image on Longleaf using Apptainer and Slurm
+
+**Note:** You may be working on macOS or Windows, but you'll be building Linux containers that will run on Longleaf's Linux HPC environment.
+
+**Total Points: 100**
+
+**Important:** You will need to submit:
+- A PDF/HTML version of this completed Rmd file with your answers
+- A link to your GitHub repository
+- A link to your Docker Hub image
+- Your Slurm job script
+- Screenshot/output of your Slurm job completion
+
+---
+
+# Part 1: Git and GitHub Concepts (20 points)
+
+## Question 1.1: Understanding Commits (5 points)
+
+**a)** (3 points) What does a commit do in Git? Explain what information is stored in a commit.
+
+**Answer:**
+
+In Git, a commit records a snapshot of the project's content and history at a point in time. Each commit stores:
+- The tree of files/directories
+- One or more parent commit hashes
+- Author and committer identities and timestamps
+- The commit message describing the change
+- A unique SHA-1/SHA-256 hash identifying the commit
+
+
+**b)** (2 points) Why is it important to write descriptive commit messages? Provide an example of a good commit message and a bad commit message.
+
+**Answer:**
+
+Descriptive messages help collaborators, and your future self, understand what changed and why, speeding up code reviews, debugging, and audits.
+- Good: "Add Dockerfile and benchmark script"
+- Bad: "fix stuff"
+
+
+## Question 1.2: Branching in Git (10 points)
+
+**a)** (5 points) Explain how branching works in Git. What happens when you create a new branch? What command would you use to create a new branch called `feature-analysis` and switch to it?
+
+**Answer:**
+
+Git branches are lightweight movable pointers (refs) to commits. Creating a branch adds a new pointer to the current commit without copying files. New commits on that branch move only its pointer forward.
+Command to create and switch to a new branch:
+```bash
+git checkout -b feature-analysis
+```
+
+
+**b)** (5 points) Git branching is often described as "super lightweight" compared to other version control systems. Explain why Git branching is lightweight. (Hint: Think about how Git stores branches and what happens under the hood when you create a branch.)
+
+**Answer:**
+
+Branches are just small files with a commit hash, rather than full copies of the code. The data model stores content as immutable objects in a shared object database, so creating a branch is an O(1) metadata operation that reuses existing objects until new commits diverge.
+
+
+## Question 1.3: Merging Branches (5 points)
+
+**a)** (3 points) What is the purpose of merging branches? Describe the steps you would take to merge a branch called `feature-analysis` into the `main` branch.
+
+**Answer:**
+
+Merging integrates changes from one branch into another.
+- Ensure a clean working tree on `main` by pulling the latest changes:
+```bash
+git checkout main
+git pull
+git merge feature-analysis
+```
+- If mergeconflicts arise, resolve them, then:
+```bash
+git add .
+git commit -m "Resolve merge conflicts"
+git push
+```
+
+
+**b)** (2 points) What is a merge conflict and when does it occur?
+
+**Answer:**
+
+A merge conflict occurs when Git cannot automatically reconcile changes,typically when two branches modify the same lines, nearby lines, or perform conflicting renames/edits. Manual resolution is required.
+
+
+---
+
+# Part 2: Docker Image Creation and Deployment with Version Control (50 points)
+
+In this section, you will create a Docker image that can run the `compute_bench.py` script (which you used in Homework 2), which benchmarks CPU/GPU performance using PyTorch. **You will version control the entire process using Git and GitHub, practicing branching and merging workflows.**
+
+**Important Note on Operating Systems:** You may be working on macOS or Windows, but Docker containers run Linux by default. You will be building a **Linux-based container** that will run on Longleaf (which is also Linux). Docker handles the cross-platform compatibility automatically, so your Linux container built on macOS/Windows will work seamlessly on Longleaf's Linux environment.
+
+## Question 2.0: GitHub Repository Setup (5 points)
+
+Before building your Docker image, you will set up version control for your project.
+
+**a)** (1 points) Create a new GitHub repository called `stor674-homework5` (or similar name). Initialize it with a README. Provide the GitHub repository URL.
+
+**GitHub Repository URL:**
+
+https://github.com/rmharp/stor674-homework.git
+
+
+**b)** (2 points) Clone the repository to your local machine, add the provided files (`compute_bench.py`, this `Homework5.Rmd`), and make your initial commit. What commands did you use?
+
+**Answer:**
+
+```bash
+# Commands you used
+git clone <REPLACE-WITH-YOUR-GITHUB-REPO-URL>
+cd stor674-homework5
+cp "/Users/riley/Library/CloudStorage/GoogleDrive-rileyharper2142@gmail.com/My Drive/College/Academics/Super Senior Year/First Semester/STOR 674/Homeworks/Homework5/compute_bench.py" .
+cp "/Users/riley/Library/CloudStorage/GoogleDrive-rileyharper2142@gmail.com/My Drive/College/Academics/Super Senior Year/First Semester/STOR 674/Homeworks/Homework5/Homework5.Rmd" .
+git add .
+git commit -m "Initial commit: add benchmark script and homework Rmd"
+git push -u origin main
+```
+
+**c)** (2 points) Create a new branch called `docker-build` where you will develop your Dockerfile. What command did you use? Why is it good practice to use a separate branch for development instead of working directly on `main`?
+
+**Answer:**
+
+```bash
+# Command to create and switch to branch
+git checkout -b docker-build
+```
+
+**Explanation:**
+
+A separate branch isolates work in progress, enables code review when working in a team via PRs, preserves a stable `main`, and simplifies reverts/experiments without breaking the default branch.
+
+
+## Question 2.1: Understanding compute_bench.py (5 points)
+
+**a)** (3 points) Read the `compute_bench.py` script. What does this script do? What is its main purpose?
+
+**Answer:**
+
+It benchmarks PyTorch computations on CPU and, if available, GPU. It generates random tensors, performs an element-wise power operation to simulate compute load, times the runs for large sizes, reports timings, prints a small sample of random numbers, and saves a tensor to `mydata.pt`. The main purpose is to compare CPU vs GPU performance and verify the runtime environment.
+
+
+**b)** (2 points) What Python packages does `compute_bench.py` require?
+
+**Answer:**
+
+It requires `torch` (PyTorch). It also uses the Python standard library `time`.
+
+
+## Question 2.2: Create a Dockerfile (10 points)
+
+Create a Dockerfile that:
+- Uses an appropriate **Linux-based** base image with Python 3.9 or later
+- Installs the required Python packages (PyTorch with CUDA support for GPU computing)
+- Copies `compute_bench.py` into the container
+- Sets the default command to run the script
+
+**Important Considerations:**
+
+- **Operating System**: Even if you're on macOS or Windows, Docker will build a Linux container. Use Linux base images (e.g., `python:3.9-slim` is based on Debian Linux).
+
+- **CUDA Support**: Longleaf has NVIDIA GPUs. To enable GPU support in your container:
+  - Option 1: Use official PyTorch image with CUDA: `pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime`
+  - Option 2: Install PyTorch with CUDA support: `pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118`
+  - Note: The container itself doesn't need NVIDIA drivers (Longleaf provides those), but PyTorch needs to be CUDA-aware.
+
+- **Testing Locally**: If your computer doesn't have an NVIDIA GPU, the container will still build and run (it will just use CPU). On Longleaf with GPU nodes, it will automatically detect and use the GPU.
+
+**Instructions:**
+
+1. Make sure you're on the `docker-build` branch
+2. Create a file named `Dockerfile` in your repository
+3. Write the Dockerfile content below:
+
+```dockerfile
+# Paste your Dockerfile content here
+FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime
+WORKDIR /app
+# Optionally upgrade pip and install any extras you might need
+RUN pip install --no-cache-dir --upgrade pip
+COPY compute_bench.py /app/compute_bench.py
+# Default command runs the benchmark
+CMD ["python", "/app/compute_bench.py"]
+```
+
+**Grading Criteria:**
+- Appropriate Linux base image selection (2 points)
+- CUDA-enabled PyTorch installation (4 points)
+- Proper file copying (2 points)
+- Correct CMD or ENTRYPOINT (2 points)
+
+## Question 2.3: Build and Test Docker Image (10 points)
+
+**a)** (3 points) What command did you use to build your Docker image? Include the full command and explain each part.
+
+**Answer:**
+
+```bash
+# Your command here
+docker build -t <DOCKERHUB-USERNAME>/stor674-hw5:latest .
+```
+
+**Explanation:**
+
+- `docker build`: build a container image from a Dockerfile
+- `-t <DOCKERHUB-USERNAME>/stor674-hw5:latest`: tag the image with repo/name and tag for pushing
+- `.`: use the current directory as the build context (where the Dockerfile and script live)
+
+
+**b)** (4 points) What command did you use to run your Docker image locally to test it? Include the output you received.
+
+**Answer:**
+
+```bash
+# Your command here
+# CPU-only test (works anywhere)
+docker run --rm <DOCKERHUB-USERNAME>/stor674-hw5:latest
+
+# If you have an NVIDIA GPU with Docker + nvidia-container-toolkit installed:
+docker run --rm --gpus all <DOCKERHUB-USERNAME>/stor674-hw5:latest
+```
+
+**Output:**
+
+```
+# Paste the output here
+# Example (truncated):
+# No GPU available, running on CPU only
+#
+# CPU Computations:
+# Time for 10,000,000 elements: 0.9xxx seconds
+# Time for 100,000,000 elements: 9.xxxx seconds
+#
+# Small sample of 10 random numbers:
+# tensor([...])
+#
+# Saved data to mydata.pt
+```
+
+**c)** (3 points) Were there any issues you encountered during the build or test? How did you resolve them?
+
+**Answer:**
+
+- If GPU wasn’t detected, I added `--gpus all` on `docker run` and ensured the NVIDIA container toolkit was installed.
+- For memory errors on very large tensors, I reduced the problem size or increased resources.
+- On Apple Silicon, Linux CUDA containers won’t use Apple’s MPS backend; local tests can still run on CPU. For native macOS Python (outside Docker), MPS can be used if enabled, but inside a Linux container it will not apply.
+
+
+## Question 2.4: Version Control Your Docker Build (10 points)
+
+Now that you have a working Dockerfile, let's commit it and merge it into the main branch.
+
+**a)** (3 points) On your `docker-build` branch, add and commit your Dockerfile with a descriptive commit message. What commands did you use?
+
+**Answer:**
+
+```bash
+# Commands to add and commit Dockerfile
+git add Dockerfile
+git commit -m "Add CUDA-enabled Dockerfile for PyTorch benchmark"
+```
+
+**b)** (4 points) Switch to the `main` branch and merge the `docker-build` branch into it. What commands did you use? Paste the merge message or output.
+
+**Answer:**
+
+```bash
+# Commands to switch branch and merge
+git switch main
+git pull
+git merge --no-ff docker-build -m "Merge docker-build into main"
+```
+
+**Merge Output:**
+
+```
+# Paste merge output here
+# Example:
+# Merge made by the 'ort' strategy.
+#  Dockerfile | 8 ++++++++
+#  1 file changed, 8 insertions(+)
+```
+
+**c)** (3 points) Push your changes to GitHub. Verify that your repository now contains the Dockerfile on the main branch. What command did you use to push?
+
+**Answer:**
+
+```bash
+# Command to push to GitHub
+git push origin main
+```
+
+**Verification:** Visit your GitHub repository in a web browser and confirm the Dockerfile is visible. ✓
+
+
+## Question 2.5: Push to Docker Hub (10 points)
+
+**a)** (3 points) Create a Docker Hub account (if you don't have one) and provide your Docker Hub username.
+
+**Docker Hub Username:**
+
+<REPLACE-WITH-YOUR-DOCKERHUB-USERNAME>
+
+
+**b)** (4 points) Tag your image appropriately and push it to Docker Hub. What commands did you use?
+
+**Answer:**
+
+```bash
+# Commands you used
+docker login
+# If you built with the same tag, pushing is:
+docker push <DOCKERHUB-USERNAME>/stor674-hw5:latest
+# If needed, retag:
+# docker tag localname:latest <DOCKERHUB-USERNAME>/stor674-hw5:latest
+# docker push <DOCKERHUB-USERNAME>/stor674-hw5:latest
+```
+
+**c)** (3 points) Provide the full Docker Hub image URL/name that others can use to pull your image.
+
+**Image URL:**
+
+```
+# Format: username/imagename:tag
+<DOCKERHUB-USERNAME>/stor674-hw5:latest
+```
+
+---
+
+# Part 3: Apptainer and Slurm on Longleaf (30 points)
+
+In this section, you will download your Docker image using Apptainer on UNC's Longleaf cluster and submit a job using Slurm. Remember: your Linux container built on macOS/Windows will run seamlessly on Longleaf's Linux environment.
+
+## Question 3.1: Understanding Apptainer (5 points)
+
+**a)** (3 points) What is Apptainer (formerly Singularity) and why is it used on HPC systems instead of Docker?
+
+**Answer:**
+
+Apptainer is a container runtime designed for HPC. Unlike Docker, it runs without a privileged daemon and supports unprivileged execution, which aligns with HPC security policies. It integrates cleanly with shared filesystems, modules, and schedulers (Slurm), and emphasizes reproducibility and portability for scientific workflows.
+
+
+**b)** (2 points) What does "Bring Your Own Environment" (BYOE) mean in the context of HPC and containers?
+
+**Answer:**
+
+BYOE means users package their software stack (OS base, libraries, and tools) in a container image and bring that environment to the cluster. This avoids dependency conflicts, ensures reproducibility, and decouples user software from the cluster’s base environment.
+
+
+## Question 3.2: Convert Docker Image to Apptainer (10 points)
+
+**a)** (5 points) Log into Longleaf and use Apptainer to pull your Docker image from Docker Hub. What command did you use?
+
+**Answer:**
+
+```bash
+# Command to pull/convert Docker image to Apptainer
+module load apptainer
+apptainer pull --name stor674-hw5.sif docker://<DOCKERHUB-USERNAME>/stor674-hw5:latest
+```
+
+**b)** (3 points) What is the name of the Apptainer image file (.sif) that was created?
+
+**Answer:**
+
+```
+# Filename here
+stor674-hw5.sif
+```
+
+**c)** (2 points) Test your Apptainer image interactively. What command did you use to run it?
+
+**Answer:**
+
+```bash
+# Command to run Apptainer image
+# Option 1: execute the script directly
+apptainer exec --nv stor674-hw5.sif python /app/compute_bench.py
+# Option 2: interactive shell
+# apptainer shell --nv stor674-hw5.sif
+```
+
+## Question 3.3: Create Slurm Job Script (12 points)
+
+Create a Slurm job script that runs your containerized `compute_bench.py` using Apptainer.
+
+**Hint:** If you want to test with GPU support on Longleaf, you'll need to:
+- Request a GPU partition (e.g., `#SBATCH -p gpu`)
+- Request GPU resources (e.g., `#SBATCH --gres=gpu:1`)
+- Your CUDA-enabled PyTorch in the container will automatically use the GPU!
+
+**Instructions:**
+
+1. Create a file named `run_compute_bench.sh` in your GitHub repository
+2. Include appropriate Slurm directives (partition, time, memory, etc.)
+3. Load necessary modules (if needed)
+4. Run the Apptainer container
+
+**Your Slurm Script:**
+
+```bash
+#!/bin/bash
+
+# Paste your Slurm script here
+#
+#SBATCH -J hw5-bench
+#SBATCH -p gpu
+#SBATCH --gres=gpu:1
+#SBATCH -t 00:10:00
+#SBATCH --mem=8G
+#SBATCH -o slurm-%j.out
+#SBATCH -e slurm-%j.err
+
+module purge
+module load apptainer
+
+IMAGE="$SLURM_SUBMIT_DIR/stor674-hw5.sif"
+echo "Running on host: $(hostname)"
+echo "Starting at: $(date)"
+
+# Enable NVIDIA support and execute the benchmark inside the container
+apptainer exec --nv "$IMAGE" python /app/compute_bench.py
+
+echo "Finished at: $(date)"
+```
+
+**Grading Criteria:**
+- Appropriate Slurm directives (#SBATCH) (4 points)
+- Correct Apptainer run command (6 points)
+- Output redirection and job organization (2 points)
+
+## Question 3.4: Submit, Verify, and Version Control (3 points)
+
+**a)** (1 point) What command did you use to submit your job to Slurm?
+
+**Answer:**
+
+```bash
+# Command here
+sbatch run_compute_bench.sh
+```
+
+**b)** (2 points) Provide the output of your job. Paste the contents of your Slurm output file (e.g., `slurm-jobid.out`). Also, add your Slurm script (`run_compute_bench.sh`) to your GitHub repository and push it.
+
+**Job Output:**
+
+```
+# Paste your job output here
+<PASTE slurm-<JOBID>.out CONTENTS HERE>
+```
+
+**GitHub Verification:** ✓ Pushed `run_compute_bench.sh` to repository
+
+**c)** (BONUS: +2 points) Include a screenshot showing your job in the Slurm queue or completed job information using `squeue` or `sacct`. Also show that your job successfully utilized a GPU (if you requested one).
+
+---
+
+# Part 4: Reflection and Best Practices (Optional - Extra Credit: 5 points)
+
+**Question 4.1:** Reflect on the workflow you just completed (Git → Docker → HPC). How does this approach improve reproducibility in computational research? What are some advantages and potential challenges?
+
+**Answer:**
+
+Containerizing the environment (and versioning both code and Dockerfiles) captures not only algorithms but also dependencies and system libraries, making results portable and reproducible across machines (laptop → cluster). Advantages include easier collaboration, consistent builds, and cleaner deployments to HPC via Apptainer. Challenges include larger images, GPU/runtime driver nuances, and the learning curve for container + scheduler tooling. Good CI/CD and clear documentation mitigate these issues.
+
+
+---
+
+# Submission Checklist
+
+Before submitting, make sure you have:
+
+- [ ] Completed all questions in Part 1 (Git/GitHub concepts)
+- [ ] **Created a GitHub repository with all your project files**
+- [ ] **Practiced branching and merging in your Git workflow**
+- [ ] Created a Dockerfile with CUDA support for GPU computing
+- [ ] Built and tested your Docker image locally (Linux container on macOS/Windows)
+- [ ] Pushed your image to Docker Hub
+- [ ] Provided your Docker Hub image URL
+- [ ] Created a Slurm job script
+- [ ] Successfully ran your job on Longleaf
+- [ ] **Pushed all files (Dockerfile, Slurm script, completed Rmd) to GitHub**
+- [ ] Included all output and screenshots
+- [ ] Compiled this Rmd file to HTML or PDF
+
+**Submission Instructions:**
+
+1. **Ensure your GitHub repository contains:**
+   - `Dockerfile`
+   - `compute_bench.py`
+   - `run_compute_bench.sh` (Slurm script)
+   - `Homework5.Rmd` (completed)
+   - Evidence of branching/merging in commit history
+   
+2. Submit the knitted HTML/PDF file on Canvas
+3. **Submit the link to your GitHub repository on Canvas (REQUIRED)**
+4. Submit the link to your Docker Hub image on Canvas
+
+---
+
+# Grading Rubric
+
+| Section | Points |
+|---------|--------|
+| Part 1: Git and GitHub Concepts | 20 |
+| Part 2: Docker with Version Control (includes branching/merging) | 50 |
+| Part 3: Apptainer and Slurm on Longleaf | 30 |
+| **Total** | **100** |
+| Extra Credit (Part 4: Reflection) | +5 |
+| Extra Credit (Part 3.4c: GPU screenshot) | +2 |
+| **Maximum Possible** | **107** |
+
+---
+
+# Resources
+
+- [Git Branching Documentation](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell)
+- [Docker Hub](https://hub.docker.com/)
+- [Apptainer Documentation](https://apptainer.org/docs/)
+- [Longleaf Documentation](https://help.rc.unc.edu/longleaf-cluster/)
+- Course lecture materials on GitHub, Docker, and Apptainer
+
+---
+
+**Good luck!**
+
