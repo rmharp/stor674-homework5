@@ -2031,16 +2031,20 @@ completed (Git → Docker → HPC). How does this approach improve
 reproducibility in computational research? What are some advantages and
 potential challenges?</p>
 <p><strong>Answer:</strong></p>
-<p>Containerizing the environment, and versioning both code and
-Dockerfiles, captures not only algorithms but also dependencies and
-system libraries, making results portable and reproducible across
-machines. Advantages include easier collaboration, consistent builds,
-and cleaner deployments to HPC via Apptainer. Challenges include larger
-images, GPU/runtime driver nuances, and the learning curve for container
-+ scheduler tooling. However, dedicating time to setting up CI/CD with
-tools like GitHub Actions and Jenkins, as well as clear documentation,
-can mitigate these issues.</p>
-<hr />
+<div id="this-git-docker-and-hpc-workflow-significantly-enhances-computational-reproducibility.-by-versioning-the-computational-environment-the-dockerfile-alongside-the-code-the-.py-script-in-git-it-captures-the-entire-analysis-stacknot-just-the-algorithm-but-all-its-dependencies-and-system-libraries.-this-creates-a-portable-snapshot-that-ensures-consistent-builds-and-cleaner-more-reliable-deployments-on-hpc-systems-via-apptainer.-while-this-method-introduces-challenges-such-as-managing-image-size-navigating-gpu-driver-kernel-compatibility-and-a-steeper-initial-learning-curve-these-are-outweighed-by-the-advantages.-also-these-hurdles-can-be-mitigated-with-clear-documentation-and-cicd-automation-such-as-through-the-use-of-github-actions-and-jenkins." class="section level2">
+<h2>This Git, Docker, and HPC workflow significantly enhances
+computational reproducibility. By versioning the computational
+environment, the Dockerfile, alongside the code, the .py script, in Git,
+it captures the entire analysis stack,not just the algorithm, but all
+its dependencies and system libraries. This creates a portable snapshot
+that ensures consistent builds and cleaner, more reliable deployments on
+HPC systems via Apptainer. While this method introduces challenges, such
+as managing image size, navigating GPU driver-kernel compatibility, and
+a steeper initial learning curve, these are outweighed by the
+advantages. Also, these hurdles can be mitigated with clear
+documentation and CI/CD automation such as through the use of GitHub
+Actions and Jenkins.</h2>
+</div>
 </div>
 <div id="submission-checklist" class="section level1">
 <h1>Submission Checklist</h1>
