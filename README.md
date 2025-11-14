@@ -1,4 +1,4 @@
-# STOR 674 — Homework 5
+# STOR 674 Homework 5
 
 Containerized PyTorch CPU/GPU benchmark for Longleaf (UNC). The image is built with CUDA-enabled PyTorch and can be run locally with Docker or on Longleaf via Apptainer and Slurm.
 
