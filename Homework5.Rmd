@@ -495,7 +495,6 @@ Finished at: Fri Nov 14 01:46:26 AM EST 2025
 
 Containerizing the environment, and versioning both code and Dockerfiles, captures not only algorithms but also dependencies and system libraries, making results portable and reproducible across machines. Advantages include easier collaboration, consistent builds, and cleaner deployments to HPC via Apptainer. Challenges include larger images, GPU/runtime driver nuances, and the learning curve for container + scheduler tooling. However, dedicating time to setting up CI/CD with tools like GitHub Actions and Jenkins, as well as clear documentation, can mitigate these issues.
 
-
 ---
 
 # Submission Checklist
